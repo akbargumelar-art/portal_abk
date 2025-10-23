@@ -1,0 +1,8 @@
+{
+  "name": "Portal Cirebon Raya - PT Agrabudi Komunika",
+  "description": "An internal operational dashboard for PT Agrabudi Komunika to digitize and automate sales processes, outlet management, and real-time team performance monitoring.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}
