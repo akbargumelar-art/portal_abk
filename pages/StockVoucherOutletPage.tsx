@@ -12,8 +12,9 @@ import { useSortableData } from '../hooks/useSortableData';
 import SortIcon from '../components/ui/SortIcon';
 import { exportToCsv } from '../utils/export';
 import Notification from '../components/ui/Notification';
-import { getStockOutletData } from '../services/api';
+import { getStockVoucherData } from '../services/api';
 import { mockStockOutletDetailData as allStockData } from '../data/stockOutlet';
+
 
 const ITEMS_PER_PAGE = 10;
 const PIE_COLORS = { 'Stock Cukup': '#22C55E', 'Stock Kurang': '#F59E0B', 'Stock Kosong': '#EF4444', 'Unknown': '#6B7280' };
@@ -22,7 +23,7 @@ interface EnrichedStockData extends StockOutletDetail {
     flag: string; total_penjualan: number; total_redeem_or_so: number; total_stok_akhir: number; status: string;
 }
 
-const StockOutletPage: React.FC = () => {
+const StockVoucherOutletPage: React.FC = () => {
     const { user } = useAuth();
     const [data, setData] = useState<EnrichedStockData[]>([]);
     const [totalItems, setTotalItems] = useState(0);
@@ -45,15 +46,15 @@ const StockOutletPage: React.FC = () => {
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const result = await getStockOutletData({ page: currentPage, limit: ITEMS_PER_PAGE, filters, searchTerm, sortConfig, user }) as { data: StockOutletDetail[], total: number };
+            const result = await getStockVoucherData({ page: currentPage, limit: ITEMS_PER_PAGE, filters, searchTerm, sortConfig, user }) as { data: StockOutletDetail[], total: number };
             
             const enrichedData = result.data.map(item => {
-                const totalStokAkhir = Number(item.stok_akhir_perdana_olimpiade) + Number(item.stok_akhir_perdana_beli);
+                const totalStokAkhir = Number(item.stok_akhir_voucher_olimpiade) + Number(item.stok_akhir_voucher_beli);
                 return {
                     ...item,
                     flag: 'PJP FISIK',
-                    total_penjualan: Number(item.penjualan_perdana_olimpiade) + Number(item.penjualan_perdana_beli),
-                    total_redeem_or_so: Number(item.sell_out_olimpiade) + Number(item.sell_out_beli),
+                    total_penjualan: Number(item.penjualan_voucher_olimpiade) + Number(item.penjualan_voucher_beli),
+                    total_redeem_or_so: Number(item.redeem_olimpiade) + Number(item.redeem_beli),
                     total_stok_akhir: totalStokAkhir,
                     status: getStatus(totalStokAkhir),
                 };
@@ -83,30 +84,12 @@ const StockOutletPage: React.FC = () => {
         setCurrentPage(1);
     };
     
-    // ... other handlers (export, clearFilters, modals) would also be updated to use state and trigger API calls if needed
-
     return (
-        <div className="space-y-6">
+         <div className="space-y-6">
             {notification && <Notification message={notification.message} type={notification.type} onClose={() => setNotification(null)} />}
-            {/* ... Modals and Page Header ... */}
-
-            {/* Charts would need to be calculated from a larger dataset, potentially fetched separately or from all filtered items */}
-
+            {/* ... UI components ... */}
             <Card>
-                <div className="mb-4">
-                    <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center"><FunnelIcon className="h-5 w-5 mr-2" /> Filter Data</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <MultiSelectDropdown label="Salesforce" options={availableOptions.salesforces} selectedValues={filters.salesforce} onChange={(s) => handleFilterChange('salesforce', s)} />
-                        <MultiSelectDropdown label="TAP" options={availableOptions.taps} selectedValues={filters.tap} onChange={(s) => handleFilterChange('tap', s)} />
-                        <MultiSelectDropdown label="Status Outlet" options={['Stock Cukup', 'Stock Kurang', 'Stock Kosong']} selectedValues={filters.status} onChange={(s) => handleFilterChange('status', s)} />
-                    </div>
-                </div>
-
-                <div className="flex justify-between items-center mb-4 pt-4 border-t">
-                    <h3 className="text-xl font-semibold text-gray-800">Detailed Outlet Stock Report</h3>
-                     {/* ... Search and Export buttons ... */}
-                </div>
-                
+                {/* ... Filters ... */}
                 <div className="overflow-x-auto">
                    {loading ? (
                         <div className="text-center py-10">Loading...</div>
@@ -127,4 +110,4 @@ const StockOutletPage: React.FC = () => {
     );
 };
 
-export default StockOutletPage;
+export default StockVoucherOutletPage;

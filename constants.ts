@@ -1,5 +1,4 @@
 
-
 import type { MenuItem, User, UserRole, Outlet, Complaint, PopRequest, VideoRoleplay, InputFormLink } from './types';
 import { UserRole as Roles } from './types';
 import {
@@ -30,6 +29,13 @@ import {
   DocumentChartBarIcon,
   BriefcaseIcon,
   ArrowTrendingUpIcon,
+  DocumentPlusIcon,
+  CloudArrowUpIcon,
+  GlobeAltIcon,
+  PresentationChartBarIcon,
+  CircleStackIcon,
+  FolderIcon,
+  Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 
 // FIX: Add all missing mock data constants to be exported.
@@ -97,109 +103,169 @@ export const MENU_ITEMS: MenuItem[] = [
     path: '/dashboard',
     name: 'Dashboard',
     icon: HomeIcon,
-    allowedRoles: Object.values(Roles),
+    allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS],
   },
   {
-    path: '/dokumentasi',
-    name: 'Dokumentasi',
-    icon: DocumentTextIcon,
-    allowedRoles: [Roles.SALESFORCE_IDS, Roles.DIRECT_SALES_D2C, Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SUPERVISOR_D2C],
+    path: '/sagala',
+    name: 'Sagala',
+    icon: GlobeAltIcon,
+    allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS],
   },
   {
-    path: '/input-form',
-    name: 'Input Form',
-    icon: PencilSquareIcon,
-    allowedRoles: Object.values(Roles),
-  },
-  {
-    path: '/outlet-register',
-    name: 'Outlet Register',
+    path: '/outlet',
+    name: 'Outlet',
     icon: BuildingStorefrontIcon,
-    allowedRoles: Object.values(Roles),
+    allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS],
+    subItems: [
+      { path: '/outlet/register', name: 'Outlet Register', icon: QueueListIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS] },
+      { path: '/outlet/stock', name: 'Stock Perdana Outlet', icon: CubeIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS] },
+      { path: '/outlet/stock-voucher', name: 'Stock Voucher Outlet', icon: TicketIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS] },
+      { path: '/outlet/omzet', name: 'Omzet Outlet', icon: BanknotesIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS] },
+    ]
+  },
+  {
+    path: '/salesplan',
+    name: 'Sales Plan',
+    icon: PresentationChartBarIcon,
+    allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS],
+    subItems: [
+      { path: '/salesplan/perdana', name: 'Perdana', icon: CubeIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS] },
+      { path: '/salesplan/voucher-fisik', name: 'Voucher Fisik', icon: TicketIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS] },
+      { path: '/salesplan/cvm', name: 'CVM', icon: MegaphoneIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS] },
+      { path: '/salesplan/monitoring-visit', name: 'Monitoring Visit', icon: BriefcaseIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS] },
+    ]
   },
   {
     path: '/sellthru',
     name: 'Sell Thru',
     icon: ReceiptPercentIcon,
-    allowedRoles: Object.values(Roles),
+    allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C],
     subItems: [
-      { path: '/sellthru/nota', name: 'Nota', icon: DocumentTextIcon, allowedRoles: Object.values(Roles) },
-      { path: '/sellthru/digipos', name: 'Digipos', icon: CpuChipIcon, allowedRoles: Object.values(Roles) },
+      { path: '/sellthru/nota', name: 'ST Nota', icon: DocumentTextIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS] },
+      { path: '/sellthru/digipos', name: 'ST Digipos', icon: CpuChipIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS] },
+      { path: '/sellthru/penjualan-d2c', name: 'Penjualan D2C', icon: MegaphoneIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C] },
     ],
   },
   {
-    path: '/program-berjalan',
-    name: 'Program Berjalan',
-    icon: MegaphoneIcon,
-    allowedRoles: Object.values(Roles),
-    subItems: [
-        { path: '/program-berjalan/scs', name: 'SCS', icon: CheckBadgeIcon, allowedRoles: Object.values(Roles) }
-    ]
+      path: '/performansi',
+      name: 'Performansi',
+      icon: PresentationChartLineIcon,
+      allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C],
+      subItems: [
+          { path: '/performansi/top-line', name: 'Top Line', icon: ArrowTrendingUpIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SUPERVISOR_D2C] },
+          { path: '/performansi/market-share', name: 'Market Share', icon: PresentationChartBarIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C] },
+          { path: '/aktifasi', name: 'Aktifasi', icon: CheckBadgeIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C] },
+          { path: '/sellout', name: 'Sellout', icon: ShoppingCartIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C] },
+          { path: '/inject-voucher-fisik', name: 'Inject Voucher Fisik', icon: TicketIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C] },
+          { path: '/redeem-voucher-fisik', name: 'Redeem Voucher Fisik', icon: GiftIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C] },
+      ]
   },
-  { path: '/stock-outlet', name: 'Stock Outlet', icon: CubeIcon, allowedRoles: Object.values(Roles) },
-  { path: '/omzet-outlet', name: 'Omzet Outlet', icon: BanknotesIcon, allowedRoles: Object.values(Roles) },
   {
     path: '/kpi',
     name: 'KPI',
     icon: ChartPieIcon,
-    allowedRoles: Object.values(Roles),
+    allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C],
     subItems: [
-      { path: '/kpi/cluster', name: 'KPI Cluster', icon: ChartPieIcon, allowedRoles: Object.values(Roles) },
-      { path: '/kpi/salesforce', name: 'KPI Salesforce', icon: UserGroupIcon, allowedRoles: Object.values(Roles) },
+      { path: '/kpi/cluster', name: 'KPI Cluster', icon: ChartPieIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS] },
+      { path: '/kpi/salesforce', name: 'KPI Salesforce', icon: UserGroupIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS] },
+      { path: '/kpi/d2c', name: 'KPI D2C', icon: UserGroupIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C] },
+    ],
+  },
+  {
+    path: '/program',
+    name: 'Program',
+    icon: ArchiveBoxIcon,
+    allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C],
+    subItems: [
+      { path: '/program/scs', name: 'SCS', icon: CheckBadgeIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C] },
+      { path: '/program/retina', name: 'Retina', icon: UserGroupIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C] },
     ],
   },
   {
     path: '/fee',
     name: 'Fee',
     icon: ScaleIcon,
-    allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER],
+    allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SALESFORCE_IDS],
     subItems: [
       { path: '/fee/fee', name: 'Fee', icon: BanknotesIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER] },
-      { path: '/fee/management-fee', name: 'Management Fee', icon: BriefcaseIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER] },
+      { path: '/fee/management-fee', name: 'Management Fee', icon: BriefcaseIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SALESFORCE_IDS] },
       { path: '/fee/budget-businessplan', name: 'Budget Business Plan', icon: DocumentChartBarIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER] },
     ],
-  },
-  { path: '/aktifasi', name: 'Aktifasi', icon: CheckBadgeIcon, allowedRoles: Object.values(Roles) },
-  { path: '/sellout', name: 'Sellout', icon: ShoppingCartIcon, allowedRoles: Object.values(Roles) },
-  { path: '/inject-voucher-fisik', name: 'Inject Voucher Fisik', icon: TicketIcon, allowedRoles: Object.values(Roles) },
-  { path: '/redeem-voucher-fisik', name: 'Redeem Voucher Fisik', icon: GiftIcon, allowedRoles: Object.values(Roles) },
-  {
-      path: '/performansi',
-      name: 'Performansi',
-      icon: PresentationChartLineIcon,
-      allowedRoles: Object.values(Roles),
-      subItems: [
-          { path: '/performansi/top-line', name: 'Top Line', icon: ArrowTrendingUpIcon, allowedRoles: Object.values(Roles) }
-      ]
   },
   {
     path: '/doa',
     name: 'DOA',
     icon: ShieldExclamationIcon,
-    allowedRoles: Object.values(Roles),
+    allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C],
     subItems: [
-      { path: '/doa/alokasi', name: 'Alokasi', icon: ArchiveBoxArrowDownIcon, allowedRoles: Object.values(Roles) },
-      { path: '/doa/list-sn', name: 'List SN', icon: QueueListIcon, allowedRoles: Object.values(Roles) },
-      { path: '/doa/stock', name: 'Stock', icon: ArchiveBoxIcon, allowedRoles: Object.values(Roles) },
+      { path: '/doa/alokasi', name: 'Alokasi', icon: ArchiveBoxArrowDownIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C] },
+      { path: '/doa/list-sn', name: 'List SN', icon: QueueListIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C] },
+      { path: '/doa/stock', name: 'Stock', icon: ArchiveBoxIcon, allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C] },
     ],
   },
   {
-    path: '/video',
-    name: 'Video Roleplay',
-    icon: VideoCameraIcon,
-    allowedRoles: [Roles.SALESFORCE_IDS, Roles.DIRECT_SALES_D2C, Roles.ADMIN_SUPER, Roles.MANAGER],
-  },
-  {
-    path: '/komplain',
-    name: 'Komplain',
-    icon: ExclamationTriangleIcon,
-    allowedRoles: [Roles.SALESFORCE_IDS, Roles.DIRECT_SALES_D2C, Roles.ADMIN_SUPER, Roles.MANAGER],
+    path: '/dokumentasi',
+    name: 'Dokumentasi',
+    icon: DocumentTextIcon,
+    allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C],
+    subItems: [
+      {
+        path: '/dokumentasi/form-kunjungan',
+        name: 'Form Kunjungan',
+        icon: DocumentPlusIcon,
+        allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C],
+      },
+      {
+        path: '/dokumentasi/input-form',
+        name: 'Input Form',
+        icon: PencilSquareIcon,
+        allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C],
+      },
+      {
+        path: '/dokumentasi/video',
+        name: 'Video Roleplay',
+        icon: VideoCameraIcon,
+        allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C],
+      },
+      {
+        path: '/dokumentasi/komplain',
+        name: 'Komplain',
+        icon: ExclamationTriangleIcon,
+        allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SALESFORCE_IDS, Roles.SUPERVISOR_D2C, Roles.DIRECT_SALES_D2C],
+      },
+    ]
   },
   {
     path: '/monitoring-pop',
     name: 'Monitoring POP',
     icon: ChartBarIcon,
-    allowedRoles: [Roles.SALESFORCE_IDS, Roles.DIRECT_SALES_D2C, Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_D2C, Roles.SUPERVISOR_IDS],
+    allowedRoles: [Roles.ADMIN_SUPER, Roles.MANAGER, Roles.SUPERVISOR_IDS, Roles.SUPERVISOR_D2C, Roles.SALESFORCE_IDS],
+  },
+  {
+    path: '/data-upload-center',
+    name: 'Data Upload Center',
+    icon: CloudArrowUpIcon,
+    allowedRoles: [Roles.ADMIN_SUPER],
+    subItems: [
+        {
+            path: '/data-upload-center/upload-database',
+            name: 'Upload Database',
+            icon: CircleStackIcon,
+            allowedRoles: [Roles.ADMIN_SUPER],
+        },
+        {
+            path: '/data-upload-center/file-management',
+            name: 'Manajemen File Data',
+            icon: FolderIcon,
+            allowedRoles: [Roles.ADMIN_SUPER],
+        },
+        {
+            path: '/data-upload-center/database-settings',
+            name: 'Pengaturan Koneksi',
+            icon: Cog6ToothIcon,
+            allowedRoles: [Roles.ADMIN_SUPER],
+        }
+    ]
   },
   {
     path: '/user-management',
@@ -207,6 +273,29 @@ export const MENU_ITEMS: MenuItem[] = [
     icon: UserGroupIcon,
     allowedRoles: [Roles.ADMIN_SUPER],
   },
+];
+
+export const ADMIN_INPUT_MENU_ITEMS: MenuItem[] = [
+    {
+        path: '/data-upload-center',
+        name: 'Data Upload Center',
+        icon: CloudArrowUpIcon,
+        allowedRoles: [Roles.ADMIN_INPUT],
+        subItems: [
+            {
+                path: '/data-upload-center/upload-database',
+                name: 'Upload Database',
+                icon: CircleStackIcon,
+                allowedRoles: [Roles.ADMIN_INPUT],
+            },
+            {
+                path: '/data-upload-center/file-management',
+                name: 'Manajemen File Data',
+                icon: FolderIcon,
+                allowedRoles: [Roles.ADMIN_INPUT],
+            }
+        ]
+    }
 ];
 
 export const MOCK_DASHBOARD_SALES_TREND = [
@@ -219,9 +308,9 @@ export const MOCK_DASHBOARD_SALES_TREND = [
 ];
 
 export const MOCK_INPUT_FORMS: InputFormLink[] = [
-  { id: '1', title: 'Laporan Penjualan Harian', description: 'Input data penjualan harian outlet', path: '/input-form/daily-sales' },
-  { id: '2', title: 'Request Material Promosi', description: 'Formulir pengajuan material promosi (POP)', path: '/input-form/pop-request' },
-  { id: '3', title: 'Laporan Stok Opname', description: 'Input hasil stok opname mingguan', path: '/input-form/stock-opname' },
+  { id: '1', title: 'Laporan Penjualan Harian', description: 'Input data penjualan harian outlet', path: '/dokumentasi/input-form/daily-sales' },
+  { id: '2', title: 'Request Material Promosi', description: 'Formulir pengajuan material promosi (POP)', path: '/dokumentasi/input-form/pop-request' },
+  { id: '3', title: 'Laporan Stok Opname', description: 'Input hasil stok opname mingguan', path: '/dokumentasi/input-form/stock-opname' },
 ];
 
 export const MOCK_VIDEOS: VideoRoleplay[] = [

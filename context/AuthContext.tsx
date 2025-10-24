@@ -1,7 +1,7 @@
 
 import React, { createContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { User } from '../types';
-import { MOCK_USERS } from '../constants';
+import { login as apiLogin } from '../services/api';
 
 interface AuthContextType {
   user: User | null;
@@ -33,18 +33,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const login = useCallback(async (username: string) => {
-    return new Promise<void>((resolve, reject) => {
-      setTimeout(() => {
-        const potentialUser = MOCK_USERS[username];
-        if (potentialUser) {
-          setUser(potentialUser);
-          localStorage.setItem('user', JSON.stringify(potentialUser));
-          resolve();
-        } else {
-          reject(new Error("User not found"));
-        }
-      }, 500);
-    });
+    const loggedInUser = await apiLogin(username);
+    setUser(loggedInUser);
+    localStorage.setItem('user', JSON.stringify(loggedInUser));
   }, []);
 
   const logout = useCallback(() => {

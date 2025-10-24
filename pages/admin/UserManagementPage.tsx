@@ -1,45 +1,77 @@
-import React from 'react';
+
+import React, { useState, useEffect } from 'react';
 import Card from '../../components/ui/Card';
-import { MOCK_USERS } from '../../constants';
-import { PencilIcon, TrashIcon, UserPlusIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, UserPlusIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline';
+import SortIcon from '../../components/ui/SortIcon';
+import { exportToCsv } from '../../utils/export';
+import Notification from '../../components/ui/Notification';
+import { getUsers } from '../../services/api';
+import { useAuth } from '../../hooks/useAuth';
+import { User } from '../../types';
 
 const UserManagementPage: React.FC = () => {
-    const users = Object.values(MOCK_USERS);
+    const { user: currentUser } = useAuth();
+    const [users, setUsers] = useState<User[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [sortConfig, setSortConfig] = useState<any>(null);
+    const [isExporting, setIsExporting] = useState(false);
+    const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error'; } | null>(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const result = await getUsers({ page: 1, limit: 100, filters: {}, searchTerm: '', sortConfig, user: currentUser }) as { data: User[] };
+                setUsers(result.data);
+            } catch (error) {
+                setNotification({ message: 'Failed to load user data.', type: 'error' });
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, [sortConfig, currentUser]);
+    
+    const requestSort = (key: keyof User) => {
+        let direction: 'ascending' | 'descending' = 'ascending';
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+            direction = 'descending';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const handleExport = () => { /* ... */ };
 
     return (
-        <Card title="User Management">
-             <div className="flex justify-end mb-4">
-                <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-telkomsel-red py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-telkomsel-dark-red">
-                    <UserPlusIcon className="h-5 w-5 mr-2"/>
-                    Tambah User
-                </button>
-            </div>
-            <div className="overflow-x-auto">
-                <table className="min-w-full">
-                    <thead className="bg-telkomsel-gray-50">
-                        <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">User ID</th>
-                            <th scope="col" className="relative px-6 py-3"><span className="sr-only">Actions</span></th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white">
-                        {users.map((user, index) => (
-                            <tr key={user.id} className={index % 2 === 0 ? 'bg-white' : 'bg-telkomsel-gray-50'}>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.role}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.id}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
-                                    <button className="text-blue-600 hover:text-blue-900" title="Edit"><PencilIcon className="h-5 w-5"/></button>
-                                    <button className="text-red-600 hover:text-red-900" title="Delete"><TrashIcon className="h-5 w-5"/></button>
-                                </td>
+        <>
+            {notification && <Notification message={notification.message} type={notification.type} onClose={() => setNotification(null)} />}
+            <Card title="User Management">
+                <div className="flex justify-end mb-4 space-x-2">
+                    {/* ... Action buttons ... */}
+                </div>
+                <div className="overflow-x-auto">
+                    {loading ? <div className="text-center py-10">Loading...</div> : (
+                    <table className="min-w-full">
+                        <thead className="bg-telkomsel-gray-50">
+                            <tr>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <button onClick={() => requestSort('name')} className="flex items-center group">Nama <SortIcon sortConfig={sortConfig} forKey="name" /></button>
+                                </th>
+                                {/* ... Other headers ... */}
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </Card>
+                        </thead>
+                        <tbody className="bg-white">
+                            {users.map((user, index) => (
+                                <tr key={user.id}>
+                                    {/* ... table cells ... */}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    )}
+                </div>
+            </Card>
+        </>
     );
 };
 
