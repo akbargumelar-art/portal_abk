@@ -23,5 +23,12 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": [
+    "node_modules", 
+    "backend", 
+    "vite.config.ts",
+    "tailwind.config.js",
+    "postcss.config.js"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

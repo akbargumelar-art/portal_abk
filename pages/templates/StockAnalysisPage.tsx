@@ -142,22 +142,21 @@ const StockAnalysisPage: React.FC<StockAnalysisPageProps> = ({ pageTitle, dataTy
             const salesforceMatch = filters.salesforce.length === 0 || filters.salesforce.includes(item.salesforce);
             const tapMatch = filters.tap.length === 0 || filters.tap.includes(item.tap);
             
-            // FIX: Removed unnecessary `Number()` conversion as `dynamicKeys` now ensures the property is a number.
-            const totalStock = item[dynamicKeys.stokAkhirOlimpiade] + item[dynamicKeys.stokAkhirBeli];
+            // FIX: Added explicit Number() conversion. Even with typed keys, TypeScript can struggle with
+            // inference in complex scenarios. This ensures robust arithmetic operations, accommodating
+            // both numbers and numeric strings from an API.
+            const totalStock = Number(item[dynamicKeys.stokAkhirOlimpiade]) + Number(item[dynamicKeys.stokAkhirBeli]);
             const status = getStatus(totalStock);
             const statusMatch = filters.status.length === 0 || filters.status.includes(status);
 
             return searchMatch && tapMatch && salesforceMatch && statusMatch;
         }).map((item: StockOutletDetail) => {
-            // FIX: Removed unnecessary `Number()` conversion.
-            const totalStokAkhir = item[dynamicKeys.stokAkhirOlimpiade] + item[dynamicKeys.stokAkhirBeli];
+            const totalStokAkhir = Number(item[dynamicKeys.stokAkhirOlimpiade]) + Number(item[dynamicKeys.stokAkhirBeli]);
             return {
                 ...item,
                 flag: 'PJP FISIK',
-                // FIX: Removed unnecessary `Number()` conversion.
-                total_penjualan: item[dynamicKeys.penjualanOlimpiade] + item[dynamicKeys.penjualanBeli],
-                // FIX: Removed unnecessary `Number()` conversion.
-                total_redeem_or_so: item[dynamicKeys.secondaryActionOlimpiade] + item[dynamicKeys.secondaryActionBeli],
+                total_penjualan: Number(item[dynamicKeys.penjualanOlimpiade]) + Number(item[dynamicKeys.penjualanBeli]),
+                total_redeem_or_so: Number(item[dynamicKeys.secondaryActionOlimpiade]) + Number(item[dynamicKeys.secondaryActionBeli]),
                 total_stok_akhir: totalStokAkhir,
                 status: getStatus(totalStokAkhir),
             };
