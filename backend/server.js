@@ -2,17 +2,21 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 
-// In a real app, this data would come from a database.
-// For now, we import it from the mock data files.
-// NOTE: This simple setup requires data files to be in CommonJS format (using module.exports).
-// For this project, we've duplicated the data here to avoid module conflicts.
-const { MOCK_USERS, MOCK_DASHBOARD_SALES_TREND, MOCK_COMPLAINTS, MOCK_POP_REQUESTS } = require('../constants');
-const { outletData } = require('../data/outlets');
-const { mockSellthruNotaData } = require('../data/sellthruNota');
-const { mockStockOutletDetailData } = require('../data/stockOutlet');
-const { mockOmzetOutletData } = require('../data/omzetOutlet');
-const { mockDoaAlokasiData, mockListSnData, mockDoaStockData } = require('../data/doa');
-const { UserRole } = require('../types');
+// All data is now sourced from a self-contained JS file, making the backend independent.
+const { 
+    MOCK_USERS, 
+    MOCK_DASHBOARD_SALES_TREND, 
+    MOCK_COMPLAINTS, 
+    MOCK_POP_REQUESTS,
+    outletData,
+    mockSellthruNotaData,
+    mockStockOutletDetailData,
+    mockOmzetOutletData,
+    mockDoaAlokasiData,
+    mockListSnData,
+    mockDoaStockData,
+    UserRole
+} = require('./data-provider');
 
 
 const app = express();
@@ -84,10 +88,14 @@ const createGenericHandler = (mockData) => (req, res) => {
     const filtered = data.filter(item => {
         const searchMatch = !searchTerm || Object.values(item).some(val => String(val).toLowerCase().includes(searchTerm.toLowerCase()));
         const filterMatch = Object.entries(filters).every(([key, value]) => {
+            if (!value) return true; // Skip empty filters
             if (Array.isArray(value) && value.length > 0) {
                 return value.includes(item[key]);
             }
-            // Add date filtering logic if needed
+            if (typeof value === 'string' && value.length > 0) {
+                 return item[key] === value;
+            }
+            // Add date filtering logic if needed for specific endpoints
             return true;
         });
         return searchMatch && filterMatch;
@@ -119,8 +127,8 @@ app.post('/api/users', createGenericHandler(Object.values(MOCK_USERS)));
 // Form submission endpoint
 app.post('/api/submit-visit', (req, res) => {
     console.log("Received visit form data:", req.body);
-    // In a real app, you would save this to a database and trigger a webhook.
-    res.status(200).json({ success: true, message: "Form submitted and webhook triggered successfully!" });
+    // In a real app, you would save this to a database.
+    res.status(200).json({ success: true, message: "Form submitted successfully!" });
 });
 
 

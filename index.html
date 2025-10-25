@@ -8,74 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-            },
-            colors: {
-              'telkomsel-red': '#EC2028',
-              'telkomsel-dark-red': '#d41c23',
-              'telkomsel-gray': {
-                50: '#F9FAFB',
-                100: '#f7fafc',
-                200: '#edf2f7',
-                300: '#e2e8f0',
-                400: '#cbd5e0',
-                500: '#a0aec0',
-                600: '#718096',
-                700: '#4a5568',
-                800: '#2d3748',
-                900: '#1a202c',
-              },
-            }
-          }
-        }
-      }
-    </script>
-    <style>
-      /* Modern Scrollbar Styling */
-      /* For Webkit-based browsers (Chrome, Safari) */
-      ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      ::-webkit-scrollbar-thumb {
-        background-color: #cbd5e0; /* telkomsel-gray-400 */
-        border-radius: 10px;
-        border: 2px solid transparent;
-        background-clip: content-box;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background-color: #a0aec0; /* telkomsel-gray-500 */
-      }
-      /* For Firefox */
-      * {
-        scrollbar-width: thin;
-        scrollbar-color: #cbd5e0 transparent; /* thumb and track */
-      }
-
-      /* Notification Animation */
-      @keyframes fade-in-down {
-        from {
-          opacity: 0;
-          transform: translateY(-20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      .animate-fade-in-down {
-        animation: fade-in-down 0.3s ease-out forwards;
-      }
-    </style>
+    <link rel="stylesheet" href="/index.css">
   <script type="importmap">
 {
   "imports": {
@@ -83,13 +16,16 @@
     "react": "https://aistudiocdn.com/react@^19.2.0",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
     "recharts": "https://aistudiocdn.com/recharts@^3.3.0",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.0",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.4",
     "@heroicons/react/": "https://aistudiocdn.com/@heroicons/react@^2.2.0/",
-    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.4"
+    "vite": "https://aistudiocdn.com/vite@^7.1.12"
   }
 }
 </script>
 </head>
   <body class="bg-telkomsel-gray-100 font-sans">
     <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
   </body>
 </html>

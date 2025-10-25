@@ -29,6 +29,11 @@ interface EnrichedStockData extends StockOutletDetail {
     status: string;
 }
 
+// FIX: Define a type for numeric keys of StockOutletDetail to ensure type safety in arithmetic operations.
+type StockOutletNumericKeys = keyof {
+    [K in keyof StockOutletDetail as StockOutletDetail[K] extends number ? K : never]: StockOutletDetail[K]
+};
+
 interface StockAnalysisPageProps {
     pageTitle: string;
     dataType: 'perdana' | 'voucher';
@@ -55,18 +60,17 @@ const StockAnalysisPage: React.FC<StockAnalysisPageProps> = ({ pageTitle, dataTy
 
     const isAdmin = user?.role === UserRole.ADMIN_SUPER || user?.role === UserRole.ADMIN_INPUT;
 
-    // FIX: Cast dynamic keys to `keyof StockOutletDetail` to ensure correct type inference.
-    // This resolves issues where TypeScript cannot guarantee that the string keys are valid properties
-    // of the StockOutletDetail type, which is necessary for performing arithmetic operations.
+    // FIX: Replaced broad `keyof StockOutletDetail` cast with a specific `StockOutletNumericKeys` type
+    // to allow TypeScript to correctly infer the value type as `number`, resolving arithmetic operation errors.
     const dynamicKeys = useMemo(() => {
         const isPerdana = dataType === 'perdana';
         return {
-            penjualanOlimpiade: (isPerdana ? 'penjualan_perdana_olimpiade' : 'penjualan_voucher_olimpiade') as keyof StockOutletDetail,
-            penjualanBeli: (isPerdana ? 'penjualan_perdana_beli' : 'penjualan_voucher_beli') as keyof StockOutletDetail,
-            secondaryActionOlimpiade: (isPerdana ? 'sell_out_olimpiade' : 'redeem_olimpiade') as keyof StockOutletDetail,
-            secondaryActionBeli: (isPerdana ? 'sell_out_beli' : 'redeem_beli') as keyof StockOutletDetail,
-            stokAkhirOlimpiade: (isPerdana ? 'stok_akhir_perdana_olimpiade' : 'stok_akhir_voucher_olimpiade') as keyof StockOutletDetail,
-            stokAkhirBeli: (isPerdana ? 'stok_akhir_perdana_beli' : 'stok_akhir_voucher_beli') as keyof StockOutletDetail,
+            penjualanOlimpiade: (isPerdana ? 'penjualan_perdana_olimpiade' : 'penjualan_voucher_olimpiade') as StockOutletNumericKeys,
+            penjualanBeli: (isPerdana ? 'penjualan_perdana_beli' : 'penjualan_voucher_beli') as StockOutletNumericKeys,
+            secondaryActionOlimpiade: (isPerdana ? 'sell_out_olimpiade' : 'redeem_olimpiade') as StockOutletNumericKeys,
+            secondaryActionBeli: (isPerdana ? 'sell_out_beli' : 'redeem_beli') as StockOutletNumericKeys,
+            stokAkhirOlimpiade: (isPerdana ? 'stok_akhir_perdana_olimpiade' : 'stok_akhir_voucher_olimpiade') as StockOutletNumericKeys,
+            stokAkhirBeli: (isPerdana ? 'stok_akhir_perdana_beli' : 'stok_akhir_voucher_beli') as StockOutletNumericKeys,
             statusLabel: isPerdana ? 'Status Outlet' : 'Status Voucher',
             secondaryActionLabel: isPerdana ? 'Sell Out' : 'Redeem'
         };
@@ -138,18 +142,22 @@ const StockAnalysisPage: React.FC<StockAnalysisPageProps> = ({ pageTitle, dataTy
             const salesforceMatch = filters.salesforce.length === 0 || filters.salesforce.includes(item.salesforce);
             const tapMatch = filters.tap.length === 0 || filters.tap.includes(item.tap);
             
-            const totalStock = Number(item[dynamicKeys.stokAkhirOlimpiade]) + Number(item[dynamicKeys.stokAkhirBeli]);
+            // FIX: Removed unnecessary `Number()` conversion as `dynamicKeys` now ensures the property is a number.
+            const totalStock = item[dynamicKeys.stokAkhirOlimpiade] + item[dynamicKeys.stokAkhirBeli];
             const status = getStatus(totalStock);
             const statusMatch = filters.status.length === 0 || filters.status.includes(status);
 
             return searchMatch && tapMatch && salesforceMatch && statusMatch;
         }).map((item: StockOutletDetail) => {
-            const totalStokAkhir = Number(item[dynamicKeys.stokAkhirOlimpiade]) + Number(item[dynamicKeys.stokAkhirBeli]);
+            // FIX: Removed unnecessary `Number()` conversion.
+            const totalStokAkhir = item[dynamicKeys.stokAkhirOlimpiade] + item[dynamicKeys.stokAkhirBeli];
             return {
                 ...item,
                 flag: 'PJP FISIK',
-                total_penjualan: Number(item[dynamicKeys.penjualanOlimpiade]) + Number(item[dynamicKeys.penjualanBeli]),
-                total_redeem_or_so: Number(item[dynamicKeys.secondaryActionOlimpiade]) + Number(item[dynamicKeys.secondaryActionBeli]),
+                // FIX: Removed unnecessary `Number()` conversion.
+                total_penjualan: item[dynamicKeys.penjualanOlimpiade] + item[dynamicKeys.penjualanBeli],
+                // FIX: Removed unnecessary `Number()` conversion.
+                total_redeem_or_so: item[dynamicKeys.secondaryActionOlimpiade] + item[dynamicKeys.secondaryActionBeli],
                 total_stok_akhir: totalStokAkhir,
                 status: getStatus(totalStokAkhir),
             };
