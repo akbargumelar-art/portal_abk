@@ -1,30 +1,22 @@
 
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../components/ui/Card';
-import Modal from '../components/ui/Modal';
 import MultiSelectDropdown from '../components/ui/MultiSelectDropdown';
 import { useAuth } from '../hooks/useAuth';
-// Fix: Import types from the centralized types.ts file
-import { UserRole, StockOutletDetail } from '../types';
-import { ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon, Cog6ToothIcon, PencilIcon, DocumentArrowDownIcon, FunnelIcon } from '@heroicons/react/24/solid';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
-import { useSortableData } from '../hooks/useSortableData';
-import SortIcon from '../components/ui/SortIcon';
-import { exportToCsv } from '../utils/export';
+import { FunnelIcon } from '@heroicons/react/24/solid';
 import Notification from '../components/ui/Notification';
-// Fix: Import API functions and remove local data imports
-import { getStockVoucherData, getFilterOptions } from '../services/api';
-
+import { getStockOutletData, getFilterOptions } from '../services/api';
+// Fix: Import StockOutletDetail from the centralized types file.
+import { StockOutletDetail } from '../types'; 
 
 const ITEMS_PER_PAGE = 10;
-const PIE_COLORS = { 'Stock Cukup': '#22C55E', 'Stock Kurang': '#F59E0B', 'Stock Kosong': '#EF4444', 'Unknown': '#6B7280' };
 
 interface EnrichedStockData extends StockOutletDetail {
     flag: string; total_penjualan: number; total_redeem_or_so: number; total_stok_akhir: number; status: string;
 }
 
-const StockVoucherOutletPage: React.FC = () => {
+const StockOutletPage: React.FC = () => {
     const { user } = useAuth();
     const [data, setData] = useState<EnrichedStockData[]>([]);
     const [totalItems, setTotalItems] = useState(0);
@@ -32,12 +24,9 @@ const StockVoucherOutletPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [filters, setFilters] = useState({ tap: [] as string[], salesforce: [] as string[], status: [] as string[] });
-    const [sortConfig, setSortConfig] = useState<any>(null);
-    const [stockKurangThreshold, setStockKurangThreshold] = useState(5);
-    const [penjualanDateRange, setPenjualanDateRange] = useState({ start: new Date('2024-07-01'), end: new Date('2024-07-22')});
-    const [soDateRange, setSoDateRange] = useState({ start: new Date('2024-07-01'), end: new Date('2024-07-19')});
-    const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error'; } | null>(null);
     const [availableOptions, setAvailableOptions] = useState<any>({});
+    const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error'; } | null>(null);
+    const stockKurangThreshold = 5; // Example threshold
 
     useEffect(() => {
         const fetchOptions = async () => {
@@ -58,15 +47,15 @@ const StockVoucherOutletPage: React.FC = () => {
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const result = await getStockVoucherData({ page: currentPage, limit: ITEMS_PER_PAGE, filters, searchTerm, sortConfig, user }) as { data: StockOutletDetail[], total: number };
+            const result = await getStockOutletData({ page: currentPage, limit: ITEMS_PER_PAGE, filters, searchTerm, user }) as { data: StockOutletDetail[], total: number };
             
             const enrichedData = result.data.map(item => {
-                const totalStokAkhir = Number(item.stok_akhir_voucher_olimpiade) + Number(item.stok_akhir_voucher_beli);
+                const totalStokAkhir = Number(item.stok_akhir_perdana_olimpiade) + Number(item.stok_akhir_perdana_beli);
                 return {
                     ...item,
                     flag: 'PJP FISIK',
-                    total_penjualan: Number(item.penjualan_voucher_olimpiade) + Number(item.penjualan_voucher_beli),
-                    total_redeem_or_so: Number(item.redeem_olimpiade) + Number(item.redeem_beli),
+                    total_penjualan: Number(item.penjualan_perdana_olimpiade) + Number(item.penjualan_perdana_beli),
+                    total_redeem_or_so: Number(item.sell_out_olimpiade) + Number(item.sell_out_beli),
                     total_stok_akhir: totalStokAkhir,
                     status: getStatus(totalStokAkhir),
                 };
@@ -79,7 +68,7 @@ const StockVoucherOutletPage: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [currentPage, filters, searchTerm, sortConfig, user, getStatus]);
+    }, [currentPage, filters, searchTerm, user, getStatus]);
 
     useEffect(() => {
         fetchData();
@@ -91,9 +80,9 @@ const StockVoucherOutletPage: React.FC = () => {
     };
     
     return (
-         <div className="space-y-6">
+        <div className="space-y-6">
             {notification && <Notification message={notification.message} type={notification.type} onClose={() => setNotification(null)} />}
-            {/* ... UI components ... */}
+            
             <Card>
                 <div className="mb-4">
                     <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center"><FunnelIcon className="h-5 w-5 mr-2" /> Filter Data</h3>
@@ -103,25 +92,41 @@ const StockVoucherOutletPage: React.FC = () => {
                         <MultiSelectDropdown label="Status Outlet" options={['Stock Cukup', 'Stock Kurang', 'Stock Kosong']} selectedValues={filters.status} onChange={(s) => handleFilterChange('status', s)} />
                     </div>
                 </div>
+
+                <div className="flex justify-between items-center mb-4 pt-4 border-t">
+                    <h3 className="text-xl font-semibold text-gray-800">Detailed Outlet Stock Report</h3>
+                </div>
+                
                 <div className="overflow-x-auto">
                    {loading ? (
                         <div className="text-center py-10">Loading...</div>
                     ) : (
                         <table className="min-w-full text-xs">
-                           {/* ... Table Headers ... */}
+                           <thead className="bg-gray-50">
+                                <tr>
+                                    <th>Outlet</th>
+                                    <th>Salesforce</th>
+                                    <th>Total Stok Akhir</th>
+                                    <th>Status</th>
+                                </tr>
+                           </thead>
                             <tbody className="bg-white">
-                                {/* Fix: Use item.id from the now-correctly-typed EnrichedStockData */}
+                                {/* Fix: Use correctly typed properties like `nama_outlet` and `salesforce` */}
                                 {data.map(item => (
-                                    <tr key={item.id}>{/* ... Table cells */}</tr>
+                                    <tr key={item.id}>
+                                        <td>{item.nama_outlet}</td>
+                                        <td>{item.salesforce}</td>
+                                        <td>{item.total_stok_akhir}</td>
+                                        <td>{item.status}</td>
+                                    </tr>
                                 ))}
                             </tbody>
                         </table>
                    )}
                 </div>
-                 {/* ... Pagination ... */}
             </Card>
         </div>
     );
 };
 
-export default StockVoucherOutletPage;
+export default StockOutletPage;

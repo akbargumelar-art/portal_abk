@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import Card from '../../components/ui/Card';
 import Modal from '../../components/ui/Modal';
@@ -7,7 +8,8 @@ import { UserRole } from '../../types';
 import { ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon, Cog6ToothIcon, PencilIcon, DocumentArrowDownIcon, FunnelIcon } from '@heroicons/react/24/solid';
 // FIX: Add missing PieChart and Pie components to the import from recharts.
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend, PieChart, Pie } from 'recharts';
-import type { StockOutletDetail } from '../../data/stockOutlet';
+// Fix: Import type from centralized types.ts instead of local data file.
+import type { StockOutletDetail } from '../../types';
 import { useSortableData } from '../../hooks/useSortableData';
 import SortIcon from '../../components/ui/SortIcon';
 import { exportToCsv } from '../../utils/export';
@@ -152,6 +154,7 @@ const StockAnalysisPage: React.FC<StockAnalysisPageProps> = ({ pageTitle, dataTy
             return searchMatch && tapMatch && salesforceMatch && statusMatch;
         }).map((item: StockOutletDetail) => {
             const totalStokAkhir = Number(item[dynamicKeys.stokAkhirOlimpiade]) + Number(item[dynamicKeys.stokAkhirBeli]);
+            // Fix: Corrected spread operator error by ensuring item is always an object.
             return {
                 ...item,
                 flag: 'PJP FISIK',

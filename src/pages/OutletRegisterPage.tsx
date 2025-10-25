@@ -1,20 +1,16 @@
 
-
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../components/ui/Card';
 import { useAuth } from '../hooks/useAuth';
 import { ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon, DocumentArrowDownIcon } from '@heroicons/react/24/solid';
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import MultiSelectDropdown from '../components/ui/MultiSelectDropdown';
 import SortIcon from '../components/ui/SortIcon';
 import type { OutletData } from '../types';
 import { exportToCsv } from '../utils/export';
 import Notification from '../components/ui/Notification';
-// Fix: Import getFilterOptions and remove local data import to resolve module errors.
 import { getOutletRegisterData, getFilterOptions } from '../services/api';
 
 const ITEMS_PER_PAGE = 15;
-const COLORS = ['#EC2028', '#FF8042', '#FFBB28', '#00C49F', '#0088FE', '#8884d8', '#ff4d4d', '#4CAF50', '#2196F3', '#9C27B0'];
 
 const OutletRegisterPage: React.FC = () => {
     const { user } = useAuth();
@@ -31,7 +27,6 @@ const OutletRegisterPage: React.FC = () => {
         kabupaten: [] as string[],
         kecamatan: [] as string[],
     });
-    // Fix: Add state for availableOptions to be populated by API call.
     const [availableOptions, setAvailableOptions] = useState({
         taps: [] as string[],
         salesforces: [] as string[],
@@ -41,8 +36,7 @@ const OutletRegisterPage: React.FC = () => {
     });
     const [isExporting, setIsExporting] = useState(false);
     const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error'; } | null>(null);
-
-    // Fix: Fetch filter options from the API instead of using local data.
+    
     useEffect(() => {
       const fetchOptions = async () => {
         try {
@@ -135,12 +129,9 @@ const OutletRegisterPage: React.FC = () => {
     const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
     const columnsToRemove: (keyof OutletData)[] = ['cluster', 'branch', 'regional', 'area'];
-    // Fix: Derive table headers from the fetched data instead of static mock data.
-    const tableHeaders: (keyof OutletData)[] = data.length > 0
-      ? (Object.keys(data[0]) as (keyof OutletData)[]).filter(
-            key => !columnsToRemove.includes(key)
-        )
-      : [];
+    const tableHeaders: (keyof OutletData)[] = data.length > 0 ? (Object.keys(data[0]) as (keyof OutletData)[]).filter(
+        key => !columnsToRemove.includes(key)
+    ) : [];
 
     return (
         <div className="space-y-6">

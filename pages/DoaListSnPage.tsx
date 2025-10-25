@@ -1,14 +1,17 @@
 
+
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import Card from '../components/ui/Card';
 import Notification from '../components/ui/Notification';
 import { FunnelIcon, XCircleIcon, MagnifyingGlassIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { mockListSnData as allSnData, type DoaListSn } from '../data/doa';
+// Fix: Import type from centralized types.ts and remove local data import
+import { type DoaListSn } from '../types';
 import { exportToCsv } from '../utils/export';
 import { useSortableData } from '../hooks/useSortableData';
 import SortIcon from '../components/ui/SortIcon';
-import { getDoaListSnData } from '../services/api';
+// Fix: Import API functions
+import { getDoaListSnData, getFilterOptions } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 
 const DoaListSnPage: React.FC = () => {
@@ -19,7 +22,18 @@ const DoaListSnPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({ startDate: '', endDate: '', lokasi: '', paket: '' });
   const [sortConfig, setSortConfig] = useState<any>(null);
-  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error'; } | null>(null);
+  const [filterOptions, setFilterOptions] = useState({ lokasi: [] as string[], paket: [] as string[] });
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+        try {
+            const options = await getFilterOptions();
+            setFilterOptions(options.doaListSn || { lokasi: [], paket: [] });
+        } catch (error) { console.error("Failed to fetch filter options:", error); }
+    };
+    fetchOptions();
+  }, []);
 
   const fetchData = useCallback(async () => {
       setLoading(true);
@@ -37,12 +51,6 @@ const DoaListSnPage: React.FC = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-  
-  const filterOptions = useMemo(() => {
-    const lokasi = [...new Set(allSnData.map(item => item.lokasi))].sort();
-    const paket = [...new Set(allSnData.map(item => item.paket))].sort();
-    return { lokasi, paket };
-  }, []);
 
   return (
     <div className="space-y-6">

@@ -1,19 +1,20 @@
 
+
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import Card from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import MultiSelectDropdown from '../components/ui/MultiSelectDropdown';
 import { useAuth } from '../hooks/useAuth';
-import { UserRole } from '../types';
+// Fix: Import types from the centralized types.ts file
+import { UserRole, StockOutletDetail } from '../types';
 import { ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon, Cog6ToothIcon, PencilIcon, DocumentArrowDownIcon, FunnelIcon } from '@heroicons/react/24/solid';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
-import { type StockOutletDetail } from '../data/stockOutlet';
 import { useSortableData } from '../hooks/useSortableData';
 import SortIcon from '../components/ui/SortIcon';
 import { exportToCsv } from '../utils/export';
 import Notification from '../components/ui/Notification';
-import { getStockOutletData } from '../services/api';
-import { mockStockOutletDetailData as allStockData } from '../data/stockOutlet';
+// Fix: Import API functions and remove local data imports
+import { getStockOutletData, getFilterOptions } from '../services/api';
 
 const ITEMS_PER_PAGE = 10;
 const PIE_COLORS = { 'Stock Cukup': '#22C55E', 'Stock Kurang': '#F59E0B', 'Stock Kosong': '#EF4444', 'Unknown': '#6B7280' };
@@ -35,6 +36,17 @@ const StockOutletPage: React.FC = () => {
     const [penjualanDateRange, setPenjualanDateRange] = useState({ start: new Date('2024-07-01'), end: new Date('2024-07-22')});
     const [soDateRange, setSoDateRange] = useState({ start: new Date('2024-07-01'), end: new Date('2024-07-19')});
     const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error'; } | null>(null);
+    const [availableOptions, setAvailableOptions] = useState<any>({});
+
+    useEffect(() => {
+        const fetchOptions = async () => {
+            try {
+                const options = await getFilterOptions();
+                setAvailableOptions(options.stock || {});
+            } catch (error) { console.error("Failed to fetch filter options:", error); }
+        };
+        fetchOptions();
+    }, []);
 
     const getStatus = useCallback((totalStock: number) => {
         if (totalStock === 0) return 'Stock Kosong';
@@ -72,12 +84,6 @@ const StockOutletPage: React.FC = () => {
         fetchData();
     }, [fetchData]);
 
-    const availableOptions = useMemo(() => {
-        const salesforces = [...new Set(allStockData.map(o => o.salesforce).filter(Boolean))].sort();
-        const taps = [...new Set(allStockData.map(o => o.tap).filter(Boolean))].sort();
-        return { taps, salesforces };
-    }, []);
-
     const handleFilterChange = (filterName: keyof typeof filters, selectedOptions: string[]) => {
         setFilters(prev => ({ ...prev, [filterName]: selectedOptions }));
         setCurrentPage(1);
@@ -96,8 +102,8 @@ const StockOutletPage: React.FC = () => {
                 <div className="mb-4">
                     <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center"><FunnelIcon className="h-5 w-5 mr-2" /> Filter Data</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <MultiSelectDropdown label="Salesforce" options={availableOptions.salesforces} selectedValues={filters.salesforce} onChange={(s) => handleFilterChange('salesforce', s)} />
-                        <MultiSelectDropdown label="TAP" options={availableOptions.taps} selectedValues={filters.tap} onChange={(s) => handleFilterChange('tap', s)} />
+                        <MultiSelectDropdown label="Salesforce" options={availableOptions.salesforces || []} selectedValues={filters.salesforce} onChange={(s) => handleFilterChange('salesforce', s)} />
+                        <MultiSelectDropdown label="TAP" options={availableOptions.taps || []} selectedValues={filters.tap} onChange={(s) => handleFilterChange('tap', s)} />
                         <MultiSelectDropdown label="Status Outlet" options={['Stock Cukup', 'Stock Kurang', 'Stock Kosong']} selectedValues={filters.status} onChange={(s) => handleFilterChange('status', s)} />
                     </div>
                 </div>
@@ -114,6 +120,7 @@ const StockOutletPage: React.FC = () => {
                         <table className="min-w-full text-xs">
                            {/* ... Table Headers ... */}
                             <tbody className="bg-white">
+                                {/* Fix: Use item.id from the now-correctly-typed EnrichedStockData */}
                                 {data.map(item => (
                                     <tr key={item.id}>{/* ... Table cells */}</tr>
                                 ))}

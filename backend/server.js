@@ -73,6 +73,49 @@ app.post('/api/dashboard', (req, res) => {
     res.json({ stats, pjpChartData, salesTrend: MOCK_DASHBOARD_SALES_TREND, recentTransactions });
 });
 
+// NEW Endpoint for dynamic filter options
+app.get('/api/filter-options', (req, res) => {
+    const getUnique = (data, key) => [...new Set(data.map(item => item[key]).filter(Boolean))].sort();
+
+    const options = {
+        outletRegister: {
+            taps: getUnique(outletData, 'tap'),
+            salesforces: getUnique(outletData, 'salesforce'),
+            pjps: getUnique(outletData, 'pjp'),
+            kabupatens: getUnique(outletData, 'kabupaten'),
+            kecamatans: getUnique(outletData, 'kecamatan'),
+        },
+        sellthruNota: {
+            taps: getUnique(mockSellthruNotaData, 'tap'),
+            salesforces: getUnique(mockSellthruNotaData, 'salesforce'),
+            kategoriOutlet: getUnique(mockSellthruNotaData, 'kategoriOutlet'),
+            kategoriProduk: getUnique(mockSellthruNotaData, 'kategoriProduk'),
+        },
+        stock: {
+            taps: getUnique(mockStockOutletDetailData, 'tap'),
+            salesforces: getUnique(mockStockOutletDetailData, 'salesforce'),
+        },
+        omzet: {
+            taps: getUnique(mockOmzetOutletData, 'tap'),
+            salesforces: getUnique(mockOmzetOutletData, 'salesforce'),
+            kabupatens: getUnique(mockOmzetOutletData, 'kabupaten'),
+            kecamatans: getUnique(mockOmzetOutletData, 'kecamatan'),
+        },
+        doaAlokasi: {
+            namaProduk: getUnique(mockDoaAlokasiData, 'namaProduk'),
+        },
+        doaListSn: {
+            lokasi: getUnique(mockListSnData, 'lokasi'),
+            paket: getUnique(mockListSnData, 'paket'),
+        },
+        doaStock: {
+            gudang: getUnique(mockDoaStockData, 'gudang'),
+        }
+    };
+    res.json(options);
+});
+
+
 // Generic Handler for most pages
 const createGenericHandler = (mockData) => (req, res) => {
     const { page = 1, limit = 15, filters = {}, searchTerm = '', sortConfig = null, user = null } = req.body;
@@ -87,15 +130,28 @@ const createGenericHandler = (mockData) => (req, res) => {
     // General filtering
     const filtered = data.filter(item => {
         const searchMatch = !searchTerm || Object.values(item).some(val => String(val).toLowerCase().includes(searchTerm.toLowerCase()));
+        
         const filterMatch = Object.entries(filters).every(([key, value]) => {
-            if (!value) return true; // Skip empty filters
-            if (Array.isArray(value) && value.length > 0) {
-                return value.includes(item[key]);
+            if (!value) return true; // Skip empty filters like empty strings
+            
+            // Handle array filters from MultiSelect
+            if (Array.isArray(value)) {
+                return value.length === 0 || value.includes(item[key]);
             }
+            
+            // Handle date range filters
+            if (key === 'startDate' && item.tanggal) {
+                return new Date(item.tanggal) >= new Date(value);
+            }
+            if (key === 'endDate' && item.tanggal) {
+                return new Date(item.tanggal) <= new Date(value);
+            }
+            
+            // Handle simple string filters
             if (typeof value === 'string' && value.length > 0) {
                  return item[key] === value;
             }
-            // Add date filtering logic if needed for specific endpoints
+
             return true;
         });
         return searchMatch && filterMatch;

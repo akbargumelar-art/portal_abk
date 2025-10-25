@@ -1,18 +1,20 @@
 
+
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import Card from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import MultiSelectDropdown from '../components/ui/MultiSelectDropdown';
-import { type OmzetOutletData, mockOmzetOutletData as allOmzetData } from '../data/omzetOutlet';
+// Fix: Import type from the centralized types.ts and remove local data import
+import { type OmzetOutletData, UserRole } from '../types';
 import { ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon, DocumentArrowDownIcon, Cog6ToothIcon, PencilIcon } from '@heroicons/react/24/solid';
 import { useSortableData } from '../hooks/useSortableData';
 import SortIcon from '../components/ui/SortIcon';
 import { exportToCsv } from '../utils/export';
 import Notification from '../components/ui/Notification';
 import { useAuth } from '../hooks/useAuth';
-import { UserRole } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { getOmzetData } from '../services/api';
+// Fix: Import API functions
+import { getOmzetData, getFilterOptions } from '../services/api';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -29,6 +31,17 @@ const OmzetOutletPage: React.FC = () => {
         salesforce: [] as string[], tap: [] as string[], kabupaten: [] as string[], kecamatan: [] as string[],
     });
     const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error'; } | null>(null);
+    const [availableOptions, setAvailableOptions] = useState<any>({});
+
+    useEffect(() => {
+        const fetchOptions = async () => {
+            try {
+                const options = await getFilterOptions();
+                setAvailableOptions(options.omzet || {});
+            } catch (error) { console.error("Failed to fetch filter options:", error); }
+        };
+        fetchOptions();
+    }, []);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -60,14 +73,6 @@ const OmzetOutletPage: React.FC = () => {
         return (current - previous) / previous;
     };
 
-    const availableOptions = useMemo(() => {
-        const taps = [...new Set(allOmzetData.map(o => o.tap).filter(Boolean))].sort();
-        const salesforces = [...new Set(allOmzetData.map(o => o.salesforce).filter(Boolean))].sort();
-        const kabupatens = [...new Set(allOmzetData.map(o => o.kabupaten).filter(Boolean))].sort();
-        const kecamatans = [...new Set(allOmzetData.map(o => o.kecamatan).filter(Boolean))].sort();
-        return { salesforces, taps, kabupatens, kecamatans };
-    }, []);
-
     const handleFilterChange = (filterName: keyof typeof filters, selected: string[]) => {
         setFilters(prev => ({ ...prev, [filterName]: selected }));
         setCurrentPage(1);
@@ -86,6 +91,14 @@ const OmzetOutletPage: React.FC = () => {
             {notification && <Notification message={notification.message} type={notification.type} onClose={() => setNotification(null)} />}
             {/* ... Other UI components ... */}
             <Card title="Detail Laporan Omzet Outlet">
+                <div className="p-4 bg-gray-50 rounded-lg border mb-4">
+                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <MultiSelectDropdown label="Salesforce" options={availableOptions.salesforces || []} selectedValues={filters.salesforce} onChange={(s) => handleFilterChange('salesforce', s)} />
+                        <MultiSelectDropdown label="TAP" options={availableOptions.taps || []} selectedValues={filters.tap} onChange={(s) => handleFilterChange('tap', s)} />
+                        <MultiSelectDropdown label="Kabupaten" options={availableOptions.kabupatens || []} selectedValues={filters.kabupaten} onChange={(s) => handleFilterChange('kabupaten', s)} />
+                        <MultiSelectDropdown label="Kecamatan" options={availableOptions.kecamatans || []} selectedValues={filters.kecamatan} onChange={(s) => handleFilterChange('kecamatan', s)} />
+                    </div>
+                </div>
                 <div className="overflow-x-auto">
                     {loading ? (
                         <div className="text-center py-10">Loading...</div>

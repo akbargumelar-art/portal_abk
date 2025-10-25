@@ -41,13 +41,11 @@ export const getDashboardData = async (user: User | null) => {
     return handleResponse(response);
 };
 
-// Fix: Add getFilterOptions to fetch dynamic filter options from the backend.
 // === Dynamic Filter Options ===
 export const getFilterOptions = async (): Promise<any> => {
     const response = await fetch(`${API_BASE_URL}/filter-options`);
     return handleResponse(response);
 };
-
 
 // === Page-specific Data Fetchers ===
 export const getOutletRegisterData = (params: any) => fetchPaginatedData('outlet-register', params);

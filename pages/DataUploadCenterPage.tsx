@@ -1,13 +1,20 @@
+
 import React, { useState, useRef } from 'react';
 import Card from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import Notification from '../components/ui/Notification';
 import { DocumentArrowDownIcon, DocumentArrowUpIcon, TableCellsIcon } from '@heroicons/react/24/outline';
 import { exportToCsv } from '../utils/export';
-import { outletData } from '../data/outlets';
-import { mockDoaAlokasiData, mockListSnData, mockDoaStockData } from '../data/doa';
-import { mockStockOutletDetailData } from '../data/stockOutlet';
-import { mockOmzetOutletData } from '../data/omzetOutlet';
+// Fix: Import API functions instead of local mock data
+import {
+    getOutletRegisterData,
+    getStockOutletData,
+    getStockVoucherData,
+    getOmzetData,
+    getDoaAlokasiData,
+    getDoaListSnData,
+    getDoaStockData
+} from '../services/api';
 
 
 interface UploadCardProps {
@@ -124,73 +131,69 @@ const DataUploadCenterPage: React.FC = () => {
     setModalState({ isOpen: false, title: '', file: null });
   };
 
-  const handleDownloadData = (title: string) => {
+  const handleDownloadData = async (title: string) => {
     if (isDownloading) return;
     setIsDownloading(title);
     setNotification(null);
 
     // Simulate async operation for UX
-    setTimeout(() => {
-        try {
-            let dataToExport: Record<string, any>[] = [];
-            let filename = 'download';
+    try {
+        let dataToExport: Record<string, any>[] = [];
+        let filename = 'download';
+        // A large limit to fetch all data, assuming total count is less than this.
+        const fetchAllParams = { page: 1, limit: 50000, filters: {}, searchTerm: '', sortConfig: null, user: null };
 
-            switch (title) {
-                case 'Data Outlet Register':
-                    dataToExport = outletData;
-                    filename = 'outlet_register_data';
-                    break;
-                case 'Data Stock Perdana':
-                    dataToExport = mockStockOutletDetailData.map(d => ({
-                        'outlet_id': d.outlet_id, 'no_rs': d.no_rs, 'nama_outlet': d.nama_outlet, 'kelurahan': d.kelurahan, 'kecamatan': d.kecamatan, 'kabupaten': d.kabupaten, 'tap': d.tap, 'pjp': d.pjp, 'salesforce': d.salesforce, 'penjualan_perdana_olimpiade': d.penjualan_perdana_olimpiade, 'penjualan_perdana_beli': d.penjualan_perdana_beli, 'sell_out_olimpiade': d.sell_out_olimpiade, 'sell_out_beli': d.sell_out_beli, 'stok_akhir_perdana_olimpiade': d.stok_akhir_perdana_olimpiade, 'stok_akhir_perdana_beli': d.stok_akhir_perdana_beli,
-                    }));
-                    filename = 'stock_perdana_data';
-                    break;
-                case 'Data Stock Voucher':
-                     dataToExport = mockStockOutletDetailData.map(d => ({
-                        'outlet_id': d.outlet_id, 'no_rs': d.no_rs, 'nama_outlet': d.nama_outlet, 'kelurahan': d.kelurahan, 'kecamatan': d.kecamatan, 'kabupaten': d.kabupaten, 'tap': d.tap, 'pjp': d.pjp, 'salesforce': d.salesforce, 'penjualan_voucher_olimpiade': d.penjualan_voucher_olimpiade, 'penjualan_voucher_beli': d.penjualan_voucher_beli, 'redeem_olimpiade': d.redeem_olimpiade, 'redeem_beli': d.redeem_beli, 'stok_akhir_voucher_olimpiade': d.stok_akhir_voucher_olimpiade, 'stok_akhir_voucher_beli': d.stok_akhir_voucher_beli,
-                    }));
-                    filename = 'stock_voucher_data';
-                    break;
-                case 'Data Omzet Outlet':
-                    dataToExport = mockOmzetOutletData.map(({ id, ...rest }) => rest);
-                    filename = 'omzet_outlet_data';
-                    break;
-                case 'Data Alokasi DOA':
-                    dataToExport = mockDoaAlokasiData.map(({ id, ...rest }) => rest);
-                    filename = 'doa_alokasi_data';
-                    break;
-                case 'Data List SN DOA':
-                    dataToExport = mockListSnData.map(({ id, ...rest }) => rest);
-                    filename = 'doa_list_sn_data';
-                    break;
-                case 'Data Stock DOA':
-                    dataToExport = mockDoaStockData.map(({ id, ...rest }) => rest);
-                    filename = 'doa_stock_data';
-                    break;
-                case 'Data KPI':
-                    // Mock data for demonstration
-                    dataToExport = [{ kpi: 'Sales Target', value: '95%', month: 'July' }];
-                    filename = 'kpi_data';
-                    break;
-                default:
-                    throw new Error('No data source configured for this section.');
-            }
-            
-            if (dataToExport.length === 0) {
-                throw new Error("No data available to download.");
-            }
-
-            exportToCsv(dataToExport, filename);
-            setNotification({ message: 'Download successful!', type: 'success' });
-
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : "An unknown error occurred during download.";
-            setNotification({ message: `Download failed: ${errorMessage}`, type: 'error' });
-        } finally {
-            setIsDownloading(null);
+        switch (title) {
+            case 'Data Outlet Register':
+                dataToExport = (await getOutletRegisterData(fetchAllParams)).data;
+                filename = 'outlet_register_data';
+                break;
+            case 'Data Stock Perdana':
+                 dataToExport = (await getStockOutletData(fetchAllParams)).data;
+                 filename = 'stock_perdana_data';
+                 break;
+            case 'Data Stock Voucher':
+                 dataToExport = (await getStockVoucherData(fetchAllParams)).data;
+                 filename = 'stock_voucher_data';
+                 break;
+            case 'Data Omzet Outlet':
+                dataToExport = (await getOmzetData(fetchAllParams)).data;
+                filename = 'omzet_outlet_data';
+                break;
+            case 'Data Alokasi DOA':
+                dataToExport = (await getDoaAlokasiData(fetchAllParams)).data;
+                filename = 'doa_alokasi_data';
+                break;
+            case 'Data List SN DOA':
+                dataToExport = (await getDoaListSnData(fetchAllParams)).data;
+                filename = 'doa_list_sn_data';
+                break;
+            case 'Data Stock DOA':
+                dataToExport = (await getDoaStockData(fetchAllParams)).data;
+                filename = 'doa_stock_data';
+                break;
+            case 'Data KPI':
+                // Mock data for demonstration as no API exists
+                dataToExport = [{ kpi: 'Sales Target', value: '95%', month: 'July' }];
+                filename = 'kpi_data';
+                break;
+            default:
+                throw new Error('No data source configured for this section.');
         }
-    }, 500);
+        
+        if (dataToExport.length === 0) {
+            throw new Error("No data available to download.");
+        }
+
+        exportToCsv(dataToExport, filename);
+        setNotification({ message: 'Download successful!', type: 'success' });
+
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred during download.";
+        setNotification({ message: `Download failed: ${errorMessage}`, type: 'error' });
+    } finally {
+        setIsDownloading(null);
+    }
   };
 
 

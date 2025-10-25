@@ -1,16 +1,17 @@
 
+
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import Card from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import MultiSelectDropdown from '../components/ui/MultiSelectDropdown';
-import { type SellthruNotaData, mockSellthruNotaData as allSellthruNotaData } from '../data/sellthruNota';
-import { outletData } from '../data/outlets';
+// Fix: Import types from the centralized types.ts file and remove local data imports.
+import { type SellthruNotaData, UserRole } from '../types';
 import { ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon, DocumentArrowDownIcon, PencilIcon } from '@heroicons/react/24/solid';
 import { exportToCsv } from '../utils/export';
 import Notification from '../components/ui/Notification';
 import { useAuth } from '../hooks/useAuth';
-import { UserRole } from '../types';
-import { getSellthruNotaData } from '../services/api';
+// Fix: Import getFilterOptions to fetch dynamic dropdown data.
+import { getSellthruNotaData, getFilterOptions } from '../services/api';
 import SortIcon from '../components/ui/SortIcon';
 
 const ITEMS_PER_PAGE = 10;
@@ -43,6 +44,19 @@ const SellthruNotaPage: React.FC = () => {
     const [updateDate, setUpdateDate] = useState(new Date('2024-07-28'));
     const [isDateModalOpen, setIsDateModalOpen] = useState(false);
     const [tempUpdateDate, setTempUpdateDate] = useState(updateDate.toISOString().split('T')[0]);
+    const [availableOptions, setAvailableOptions] = useState<any>({});
+
+    useEffect(() => {
+        const fetchOptions = async () => {
+            try {
+                const options = await getFilterOptions();
+                setAvailableOptions(options.sellthruNota || {});
+            } catch (error) {
+                console.error("Failed to fetch filter options:", error);
+            }
+        };
+        fetchOptions();
+    }, []);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -69,14 +83,6 @@ const SellthruNotaPage: React.FC = () => {
     const handleOpenDateModal = () => { /* ... */ };
     const handleSaveDate = () => { /* ... */ };
 
-    const availableOptions = useMemo(() => {
-        const taps = [...new Set(allSellthruNotaData.map(o => o.tap).filter(Boolean))].sort();
-        const salesforces = [...new Set(allSellthruNotaData.map(o => o.salesforce).filter(Boolean))].sort();
-        const kategoriOutlet = [...new Set(allSellthruNotaData.map(o => o.kategoriOutlet).filter(Boolean))].sort();
-        const kategoriProduk = [...new Set(allSellthruNotaData.map(o => o.kategoriProduk).filter(Boolean))].sort();
-        return { taps, salesforces, kategoriOutlet, kategoriProduk };
-    }, []);
-
     const handleFilterChange = (filterName: keyof Omit<typeof filters, 'startDate' | 'endDate'>, selected: string[]) => {
         setFilters(prev => ({ ...prev, [filterName]: selected }));
         setCurrentPage(1);
@@ -99,7 +105,8 @@ const SellthruNotaPage: React.FC = () => {
     const getGrowthColor = (growth: number) => growth > 0 ? 'text-green-600' : growth < 0 ? 'text-red-600' : 'text-gray-800';
     
     const summaryData = useMemo(() => {
-        const pjpMap = new Map(outletData.map(o => [o.namaOutlet, o.pjp]));
+        // Fix: Removed dependency on local `outletData`. `hariPjp` is now hardcoded.
+        // In a real application, this data should be joined on the backend.
         const currentDay = updateDate.getDate();
         const currentMonth = updateDate.getMonth();
         const currentYear = updateDate.getFullYear();
@@ -114,7 +121,7 @@ const SellthruNotaPage: React.FC = () => {
             const outletName = item.namaOutlet;
             if (!acc[outletName]) {
                 acc[outletName] = {
-                    idDigipos: item.idDigipos, noRs: item.noRs, namaOutlet: item.namaOutlet, kategoriOutlet: item.kategoriOutlet, tap: item.tap, salesforce: item.salesforce, kabupaten: item.kabupaten, kecamatan: item.kecamatan, hariPjp: pjpMap.get(outletName) || 'N/A',
+                    idDigipos: item.idDigipos, noRs: item.noRs, namaOutlet: item.namaOutlet, kategoriOutlet: item.kategoriOutlet, tap: item.tap, salesforce: item.salesforce, kabupaten: item.kabupaten, kecamatan: item.kecamatan, hariPjp: 'N/A',
                     fm1Perdana: 0, m1Perdana: 0, mPerdana: 0, growthPerdana: 0, fm1VoucherFisik: 0, m1VoucherFisik: 0, mVoucherFisik: 0, growthVoucherFisik: 0,
                 };
             }
@@ -175,6 +182,10 @@ const SellthruNotaPage: React.FC = () => {
                     <div className="mt-4">
                         <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 mb-4">
                            {/* ... Filter controls ... */}
+                           <div className="grid grid-cols-2 gap-4">
+                                <MultiSelectDropdown label="TAP" options={availableOptions.taps || []} selectedValues={filters.tap} onChange={(s) => handleFilterChange('tap', s)} />
+                                <MultiSelectDropdown label="Salesforce" options={availableOptions.salesforces || []} selectedValues={filters.salesforce} onChange={(s) => handleFilterChange('salesforce', s)} />
+                           </div>
                         </div>
                         {/* ... Summary export button and table ... */}
                     </div>

@@ -1,14 +1,17 @@
 
+
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import Card from '../components/ui/Card';
 import Notification from '../components/ui/Notification';
 import { FunnelIcon, XCircleIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { type DoaAlokasi, mockDoaAlokasiData as allDoaData } from '../data/doa';
+// Fix: Import type from the centralized types.ts file and remove local data import.
+import { type DoaAlokasi } from '../types';
 import { exportToCsv } from '../utils/export';
 import { useSortableData } from '../hooks/useSortableData';
 import SortIcon from '../components/ui/SortIcon';
-import { getDoaAlokasiData } from '../services/api';
+// Fix: Import API functions
+import { getDoaAlokasiData, getFilterOptions } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 
 
@@ -21,6 +24,17 @@ const DoaAlokasiPage: React.FC = () => {
   const [filters, setFilters] = useState({ startDate: '', endDate: '', namaProduk: '' });
   const [sortConfig, setSortConfig] = useState<any>(null);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error'; } | null>(null);
+  const [productOptions, setProductOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+        try {
+            const options = await getFilterOptions();
+            setProductOptions(options.doaAlokasi.namaProduk || []);
+        } catch (error) { console.error("Failed to fetch filter options:", error); }
+    };
+    fetchOptions();
+  }, []);
 
   const fetchData = useCallback(async () => {
       setLoading(true);
@@ -43,10 +57,6 @@ const DoaAlokasiPage: React.FC = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  const productOptions = useMemo(() => {
-    return [...new Set(allDoaData.map(item => item.namaProduk))].sort();
-  }, []);
   
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       setFilters(prev => ({ ...prev, [e.target.id]: e.target.value }));
