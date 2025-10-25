@@ -55,15 +55,18 @@ const StockAnalysisPage: React.FC<StockAnalysisPageProps> = ({ pageTitle, dataTy
 
     const isAdmin = user?.role === UserRole.ADMIN_SUPER || user?.role === UserRole.ADMIN_INPUT;
 
+    // FIX: Cast dynamic keys to `keyof StockOutletDetail` to ensure correct type inference.
+    // This resolves issues where TypeScript cannot guarantee that the string keys are valid properties
+    // of the StockOutletDetail type, which is necessary for performing arithmetic operations.
     const dynamicKeys = useMemo(() => {
         const isPerdana = dataType === 'perdana';
         return {
-            penjualanOlimpiade: isPerdana ? 'penjualan_perdana_olimpiade' : 'penjualan_voucher_olimpiade',
-            penjualanBeli: isPerdana ? 'penjualan_perdana_beli' : 'penjualan_voucher_beli',
-            secondaryActionOlimpiade: isPerdana ? 'sell_out_olimpiade' : 'redeem_olimpiade',
-            secondaryActionBeli: isPerdana ? 'sell_out_beli' : 'redeem_beli',
-            stokAkhirOlimpiade: isPerdana ? 'stok_akhir_perdana_olimpiade' : 'stok_akhir_voucher_olimpiade',
-            stokAkhirBeli: isPerdana ? 'stok_akhir_perdana_beli' : 'stok_akhir_voucher_beli',
+            penjualanOlimpiade: (isPerdana ? 'penjualan_perdana_olimpiade' : 'penjualan_voucher_olimpiade') as keyof StockOutletDetail,
+            penjualanBeli: (isPerdana ? 'penjualan_perdana_beli' : 'penjualan_voucher_beli') as keyof StockOutletDetail,
+            secondaryActionOlimpiade: (isPerdana ? 'sell_out_olimpiade' : 'redeem_olimpiade') as keyof StockOutletDetail,
+            secondaryActionBeli: (isPerdana ? 'sell_out_beli' : 'redeem_beli') as keyof StockOutletDetail,
+            stokAkhirOlimpiade: (isPerdana ? 'stok_akhir_perdana_olimpiade' : 'stok_akhir_voucher_olimpiade') as keyof StockOutletDetail,
+            stokAkhirBeli: (isPerdana ? 'stok_akhir_perdana_beli' : 'stok_akhir_voucher_beli') as keyof StockOutletDetail,
             statusLabel: isPerdana ? 'Status Outlet' : 'Status Voucher',
             secondaryActionLabel: isPerdana ? 'Sell Out' : 'Redeem'
         };
@@ -135,7 +138,6 @@ const StockAnalysisPage: React.FC<StockAnalysisPageProps> = ({ pageTitle, dataTy
             const salesforceMatch = filters.salesforce.length === 0 || filters.salesforce.includes(item.salesforce);
             const tapMatch = filters.tap.length === 0 || filters.tap.includes(item.tap);
             
-            // FIX: Explicitly type the `item` parameter to resolve type inference issues, ensuring correct arithmetic operations.
             const totalStock = Number(item[dynamicKeys.stokAkhirOlimpiade]) + Number(item[dynamicKeys.stokAkhirBeli]);
             const status = getStatus(totalStock);
             const statusMatch = filters.status.length === 0 || filters.status.includes(status);
@@ -143,7 +145,6 @@ const StockAnalysisPage: React.FC<StockAnalysisPageProps> = ({ pageTitle, dataTy
             return searchMatch && tapMatch && salesforceMatch && statusMatch;
         }).map((item: StockOutletDetail) => {
             const totalStokAkhir = Number(item[dynamicKeys.stokAkhirOlimpiade]) + Number(item[dynamicKeys.stokAkhirBeli]);
-            // FIX: Explicitly type the `item` parameter to resolve spread operator error on a potentially unknown type.
             return {
                 ...item,
                 flag: 'PJP FISIK',
@@ -153,7 +154,7 @@ const StockAnalysisPage: React.FC<StockAnalysisPageProps> = ({ pageTitle, dataTy
                 status: getStatus(totalStokAkhir),
             };
         });
-    }, [searchTerm, filters, stockKurangThreshold, data, dynamicKeys]);
+    }, [searchTerm, filters, stockKurangThreshold, data, dynamicKeys, getStatus]);
     
      const availableOptions = useMemo(() => {
         let dataForSalesforces = data;
