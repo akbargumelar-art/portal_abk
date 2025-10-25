@@ -1,15 +1,11 @@
-
-
 import React, { useState, useMemo, useEffect } from 'react';
 import Card from '../../components/ui/Card';
 import Modal from '../../components/ui/Modal';
 import MultiSelectDropdown from '../../components/ui/MultiSelectDropdown';
 import { useAuth } from '../../hooks/useAuth';
 import { UserRole } from '../../types';
-import { ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon, Cog6ToothIcon, PencilIcon, DocumentArrowDownIcon, FunnelIcon } from '@heroicons/react/24/solid';
-// FIX: Add missing PieChart and Pie components to the import from recharts.
+import { ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon, Cog6ToothIcon, DocumentArrowDownIcon, FunnelIcon } from '@heroicons/react/24/solid';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend, PieChart, Pie } from 'recharts';
-// Fix: Import type from centralized types.ts instead of local data file.
 import type { StockOutletDetail } from '../../types';
 import { useSortableData } from '../../hooks/useSortableData';
 import SortIcon from '../../components/ui/SortIcon';
@@ -139,7 +135,6 @@ const StockAnalysisPage: React.FC<StockAnalysisPageProps> = ({ pageTitle, dataTy
 
     const extendedFilteredDetailData = useMemo(() => {
         return data.filter((item: StockOutletDetail) => {
-            // Fix: Add a guard to prevent errors if item is null or undefined in the array.
             if (!item) return false;
             const searchMatch = searchTerm.length > 2
                 ? Object.values(item).some(val => String(val).toLowerCase().includes(searchTerm.toLowerCase()))
@@ -221,8 +216,6 @@ const StockAnalysisPage: React.FC<StockAnalysisPageProps> = ({ pageTitle, dataTy
             .sort((a, b) => (b.stock_gt0 + b.stock_0) - (a.stock_gt0 + a.stock_0));
     }, [extendedFilteredDetailData]);
     
-    // Summary data logic and other hooks remain largely the same, but will consume `extendedFilteredDetailData`
-    // ...
     const { items: sortedDetailData, requestSort: requestDetailSort, sortConfig: detailSortConfig } = useSortableData(extendedFilteredDetailData);
 
     const totalPages = Math.ceil(sortedDetailData.length / ITEMS_PER_PAGE);
@@ -266,8 +259,8 @@ const StockAnalysisPage: React.FC<StockAnalysisPageProps> = ({ pageTitle, dataTy
     return (
         <div className="space-y-6">
             {notification && <Notification message={notification.message} type={notification.type} onClose={() => setNotification(null)} />}
-             {/* FIX: Add content inside the Modal component to satisfy the 'children' prop requirement. */}
              <Modal isOpen={isDateModalOpen} onClose={() => setIsDateModalOpen(false)} onConfirm={handleSaveDates} title="Update Tanggal Data" confirmText="Simpan">
+                {/* FIX: Add content inside the Modal component to satisfy the 'children' prop requirement. */}
                 <div className="space-y-4">
                     <div>
                         <h4 className="font-semibold text-gray-800">Tanggal Update Penjualan</h4>
@@ -299,7 +292,16 @@ const StockAnalysisPage: React.FC<StockAnalysisPageProps> = ({ pageTitle, dataTy
             </Modal>
             <div className="flex justify-between items-start">
                 <div><h2 className="text-2xl font-semibold text-gray-800">{pageTitle}</h2></div>
-                <div className="text-right">{/* ... Date display and edit button */}</div>
+                <div className="text-right">
+                    <div className="text-sm text-gray-600">
+                        <span>Penjualan: {formatDateRange(penjualanDateRange)}</span> | <span>{dynamicKeys.secondaryActionLabel}: {formatDateRange(soDateRange)}</span>
+                    </div>
+                    {isAdmin && (
+                        <button onClick={handleOpenDateModal} className="text-xs text-blue-600 hover:underline">
+                            Ubah Tanggal
+                        </button>
+                    )}
+                </div>
             </div>
             
              {isAdmin && (
@@ -317,8 +319,8 @@ const StockAnalysisPage: React.FC<StockAnalysisPageProps> = ({ pageTitle, dataTy
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card title={`Komposisi Status ${dataType === 'perdana' ? 'Outlet' : 'Voucher'}`}>
-                    {/* FIX: Add PieChart component inside ResponsiveContainer to satisfy 'children' prop requirement. */}
                     <ResponsiveContainer width="100%" height={300}>
+                        {/* FIX: Add PieChart component inside ResponsiveContainer to satisfy 'children' prop requirement. */}
                         <PieChart>
                             <Pie
                                 data={outletStatusData}
@@ -340,8 +342,8 @@ const StockAnalysisPage: React.FC<StockAnalysisPageProps> = ({ pageTitle, dataTy
                     </ResponsiveContainer>
                 </Card>
                  <Card title="Perbandingan Outlet Stock 0 vs. Stock > 0 per Salesforce">
-                    {/* FIX: Add BarChart component inside ResponsiveContainer to satisfy 'children' prop requirement. */}
                     <ResponsiveContainer width="100%" height={300}>
+                        {/* FIX: Add BarChart component inside ResponsiveContainer to satisfy 'children' prop requirement. */}
                         <BarChart data={salesforceStockStatusData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis type="number" />
@@ -383,21 +385,27 @@ const StockAnalysisPage: React.FC<StockAnalysisPageProps> = ({ pageTitle, dataTy
                 </div>
                 
                 <div className="overflow-x-auto">
-                    <table className="min-w-full text-sm">
-                        <thead className="bg-gray-100 text-gray-600 font-semibold">
-                            {/* ... Dynamic table headers based on dataType */}
-                        </thead>
+                    <table className="min-w-full text-xs">
+                        {/* Table headers would be dynamically generated here */}
                         <tbody className="bg-white">
                             {paginatedDetailData.map(item => (
                                 <tr key={item.id} className="hover:bg-gray-50">
-                                    {/* ... Dynamic table cells based on dataType and dynamicKeys */}
+                                    {/* Table cells would be dynamically generated here */}
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
                  {totalPages > 1 && (
-                    <div className="mt-4 flex justify-between items-center">{/* ... Pagination controls */}</div>
+                    <div className="mt-4 flex justify-between items-center">
+                        <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50">
+                            <ChevronLeftIcon className="h-5 w-5 mr-1"/> Previous
+                        </button>
+                        <span className="text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
+                        <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50">
+                            Next <ChevronRightIcon className="h-5 w-5 ml-1"/>
+                        </button>
+                    </div>
                 )}
             </Card>
         </div>
