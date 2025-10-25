@@ -138,23 +138,24 @@ const StockAnalysisPage: React.FC<StockAnalysisPageProps> = ({ pageTitle, dataTy
 
     const extendedFilteredDetailData = useMemo(() => {
         return data.filter((item: StockOutletDetail) => {
+            // Fix: Add a guard to prevent errors if item is null or undefined in the array.
+            if (!item) return false;
             const searchMatch = searchTerm.length > 2
                 ? Object.values(item).some(val => String(val).toLowerCase().includes(searchTerm.toLowerCase()))
                 : true;
             const salesforceMatch = filters.salesforce.length === 0 || filters.salesforce.includes(item.salesforce);
             const tapMatch = filters.tap.length === 0 || filters.tap.includes(item.tap);
             
-            // FIX: Added explicit Number() conversion. Even with typed keys, TypeScript can struggle with
-            // inference in complex scenarios. This ensures robust arithmetic operations, accommodating
-            // both numbers and numeric strings from an API.
+            // FIX: Added explicit Number() conversion to fix arithmetic operation error.
             const totalStock = Number(item[dynamicKeys.stokAkhirOlimpiade]) + Number(item[dynamicKeys.stokAkhirBeli]);
             const status = getStatus(totalStock);
             const statusMatch = filters.status.length === 0 || filters.status.includes(status);
 
             return searchMatch && tapMatch && salesforceMatch && statusMatch;
         }).map((item: StockOutletDetail) => {
+            // FIX: Added explicit Number() conversion to ensure robust arithmetic operations.
             const totalStokAkhir = Number(item[dynamicKeys.stokAkhirOlimpiade]) + Number(item[dynamicKeys.stokAkhirBeli]);
-            // Fix: Corrected spread operator error by ensuring item is always an object.
+            // Fix: The guard in the filter ensures `item` is an object, fixing the spread operator error.
             return {
                 ...item,
                 flag: 'PJP FISIK',
@@ -171,14 +172,14 @@ const StockAnalysisPage: React.FC<StockAnalysisPageProps> = ({ pageTitle, dataTy
         let dataForTaps = data;
 
         if (filters.tap.length > 0) {
-            dataForSalesforces = dataForSalesforces.filter(o => filters.tap.includes(o.tap));
+            dataForSalesforces = dataForSalesforces.filter(o => o && filters.tap.includes(o.tap));
         }
-        const salesforces = Array.from(new Set(dataForSalesforces.map(o => o.salesforce).filter(Boolean))).sort();
+        const salesforces = Array.from(new Set(dataForSalesforces.map(o => o?.salesforce).filter(Boolean))).sort();
 
         if (filters.salesforce.length > 0) {
-            dataForTaps = dataForTaps.filter(o => filters.salesforce.includes(o.salesforce));
+            dataForTaps = dataForTaps.filter(o => o && filters.salesforce.includes(o.salesforce));
         }
-        const taps = Array.from(new Set(dataForTaps.map(o => o.tap).filter(Boolean))).sort();
+        const taps = Array.from(new Set(dataForTaps.map(o => o?.tap).filter(Boolean))).sort();
 
         return { taps, salesforces };
     }, [filters.tap, filters.salesforce, data]);
